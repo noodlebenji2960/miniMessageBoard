@@ -1,7 +1,7 @@
 import express from 'express';
 import { Readable } from 'stream';
 
-var router = express.Router();
+const router = express.Router();
 
 let messages = [];
 const messageStream = new Readable({
@@ -9,11 +9,11 @@ const messageStream = new Readable({
 });
 
 /* GET home page. */
-router.get('/', function (req, res, next) {
-  res.render('index', { title: "Mini Messageboard", messages: messages });
+router.get('/', (req, res, next) => {
+  res.render('index', { title: "Mini Messageboard", messages });
 });
 
-router.post('/', function (req, res, next) {
+router.post('/', (req, res, next) => {
   const newMessage = {
     text: req.body.messageText,
     user: req.body.messageUser.charAt(0).toUpperCase() + req.body.messageUser.slice(1),
@@ -25,7 +25,13 @@ router.post('/', function (req, res, next) {
   res.status(204).end();
 });
 
-router.get('/sse', function (req, res) {
+router.post('/typing', (req, res) => {
+  // Notify clients that someone is typing (generic message)
+  messageStream.push(`data: typing\n\n`);
+  res.status(204).end();
+});
+
+router.get('/sse', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -35,6 +41,7 @@ router.get('/sse', function (req, res) {
     res.write(`data: ${JSON.stringify(message)}\n\n`);
   });
 
+  // Function to handle data events
   function handleData(data) {
     res.write(data);
   }
@@ -44,8 +51,7 @@ router.get('/sse', function (req, res) {
 
   // Handle client disconnect
   req.on('close', () => {
-    // Clean up resources, if necessary
-    // Also, remove the listener to prevent memory leaks
+    // Clean up resources, remove the listener to prevent memory leaks
     messageStream.removeListener('data', handleData);
   });
 });

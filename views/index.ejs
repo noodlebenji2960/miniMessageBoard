@@ -12,97 +12,118 @@
 <body>
   <div id="messages"></div>
   <footer>
-    <div class="typing-indicator" id="typingIndicator">
-      Somone is typing...
+    <div class="typing-indicator" id="typingIndicator" style="display: none">
+      Someone is typing...
     </div>
-    <form method="POST" action="/">
-      <input id="messageText" placeholder="Write a message..." maxlength="280" required type="text" name="messageText" />
-      <input id="messageUser" placeholder="Your name..." maxlength="18" type="text" name="messageUser">
+    <form id="newMessageForm" method="POST" action="/">
+      <input id="messageText" placeholder="Write a message..." maxlength="280" required type="text"
+        name="messageText" />
+      <input id="messageUser" placeholder="Your username..." maxlength="18" type="text" name="messageUser">
       <input type="submit" id="submitButton" value="Submit">
     </form>
   </footer>
   <script>
     let initialLoad = true;
 
-    function calculateElapsedTime(addedTimestamp) {
-      const addedDate = new Date(addedTimestamp);
-      const currentDate = new Date();
-      const elapsedMinutes = Math.floor((currentDate - addedDate) / 60000); // 60000 milliseconds in a minute
-
-      if (elapsedMinutes === 0) {
-        return 'just now';
-      } else if (elapsedMinutes === 1) {
-        return '1 minute ago';
-      } else if (elapsedMinutes < 60) {
-        return `${elapsedMinutes} minutes ago`;
-      } else {
-        const elapsedHours = Math.floor(elapsedMinutes / 60);
-        return `${elapsedHours} ${elapsedHours === 1 ? 'hour' : 'hours'} ago`;
-      }
-    }
-
-    setTimeout(() => {
-      initialLoad = false;
-      function animateScroll(time) {
-        const progress = Math.min(time / 3000, 1);
-        window.scrollTo(0, window.pageYOffset + (document.body.scrollHeight - window.pageYOffset) * progress);
-        progress < 1 && requestAnimationFrame(animateScroll);
-      }
-      requestAnimationFrame(animateScroll);
-    }, 500);
-
-    const eventSource = new EventSource('/sse');
-    const messagesDiv = document.getElementById('messages');
-
-    eventSource.onmessage = function (event) {
-      const newMessage = JSON.parse(event.data);
-      const messageDiv = document.createElement('div');
-      messageDiv.classList.add('message');
-
-      const messageBodyDiv = document.createElement('div');
-      messageBodyDiv.classList.add("messageBody")
-      messageDiv.appendChild(messageBodyDiv)
-
-      const messageBodyP = document.createElement("p")
-      messageBodyP.textContent = newMessage.text
-      messageBodyDiv.appendChild(messageBodyP)
-
-      const elapsed = calculateElapsedTime(newMessage.added);
-
-      const messageDetailsDiv = document.createElement('div');
-      messageDetailsDiv.classList.add("messageDetails")
-      messageDiv.appendChild(messageDetailsDiv)
-
-      const messageAuthorDiv = document.createElement('b');
-      messageAuthorDiv.textContent = `${newMessage.user}`
-      messageDetailsDiv.appendChild(messageAuthorDiv)
-
-      const messageElapsedDiv = document.createElement('i');
-      messageElapsedDiv.textContent = `${elapsed}`
-      messageDetailsDiv.appendChild(messageElapsedDiv)
-
-      if (!initialLoad) {
-        // Add the class only if it's not the initial load
-        messageDiv.classList.add('newMessageAnimation');
-        messageBodyP.classList.add('newMessageAnimation');
-      }
-
-      messagesDiv.appendChild(messageDiv);
-      window.scrollTo(0, document.body.scrollHeight);
-    };
-
-    const messageTextInput = document.getElementById('messageText');
-    const typingIndicator = document.getElementById('typingIndicator');
-
-    let typingTimeout;
-
-    messageTextInput.addEventListener('input', () => {
-      clearTimeout(typingTimeout);
-      typingIndicator.style.display = 'block';
-      typingTimeout = setTimeout(() => {
-        typingIndicator.style.display = 'none';
-      }, 500);
+    const form = document.getElementById('newMessageForm');
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      form.submit()
+      document.getElementById("messageText").value=""
+      document.getElementById("messageUser").style.display = "none";
     });
+
+      function calculateElapsedTime(addedTimestamp) {
+        const addedDate = new Date(addedTimestamp);
+        const currentDate = new Date();
+        const elapsedMinutes = Math.floor((currentDate - addedDate) / 60000); // 60000 milliseconds in a minute
+
+        if (elapsedMinutes === 0) {
+          return 'just now';
+        } else if (elapsedMinutes === 1) {
+          return '1 minute ago';
+        } else if (elapsedMinutes < 60) {
+          return `${elapsedMinutes} minutes ago`;
+        } else {
+          const elapsedHours = Math.floor(elapsedMinutes / 60);
+          return `${elapsedHours} ${elapsedHours === 1 ? 'hour' : 'hours'} ago`;
+        }
+      }
+
+      setTimeout(() => {
+        initialLoad = false;
+        function animateScroll(time) {
+          const progress = Math.min(time / 3000, 1);
+          window.scrollTo(0, window.pageYOffset + (document.body.scrollHeight - window.pageYOffset) * progress);
+          progress < 1 && requestAnimationFrame(animateScroll);
+        }
+        requestAnimationFrame(animateScroll);
+      }, 500);
+
+      const eventSource = new EventSource('/sse');
+      eventSource.onmessage = function (event) {
+        if (event.data !== "typing") {
+          const messagesDiv = document.getElementById('messages');
+          const newMessage = JSON.parse(event.data);
+          const messageDiv = document.createElement('div');
+          messageDiv.classList.add('message');
+
+          const messageBodyDiv = document.createElement('div');
+          messageBodyDiv.classList.add("messageBody")
+          messageDiv.appendChild(messageBodyDiv)
+
+          const messageBodyP = document.createElement("p")
+          messageBodyP.textContent = newMessage.text
+          messageBodyDiv.appendChild(messageBodyP)
+
+          const elapsed = calculateElapsedTime(newMessage.added);
+
+          const messageDetailsDiv = document.createElement('div');
+          messageDetailsDiv.classList.add("messageDetails")
+          messageDiv.appendChild(messageDetailsDiv)
+
+          const messageAuthorDiv = document.createElement('b');
+          messageAuthorDiv.textContent = `${newMessage.user}`
+          messageDetailsDiv.appendChild(messageAuthorDiv)
+
+          const messageElapsedDiv = document.createElement('i');
+          messageElapsedDiv.textContent = `${elapsed}`
+          messageDetailsDiv.appendChild(messageElapsedDiv)
+
+          if (!initialLoad) {
+            // Add the class only if it's not the initial load
+            messageDiv.classList.add('newMessageAnimation');
+            messageBodyP.classList.add('newMessageAnimation');
+          }
+
+          messagesDiv.appendChild(messageDiv);
+        }
+
+        if (event.data == "typing") {
+          clearTimeout(typingTimeout);
+          typingIndicator.style.display = 'block';
+          typingTimeout = setTimeout(() => {
+            typingIndicator.style.display = 'none';
+          }, 500);
+        }
+        window.scrollTo(0, document.body.scrollHeight);
+      };
+
+      const messageTextInput = document.getElementById('messageText');
+      const typingIndicator = document.getElementById('typingIndicator');
+
+      let typingTimeout;
+
+      // When the user starts typing
+      messageTextInput.addEventListener('input', () => {
+        // Notify the server that someone is typing
+        fetch('/typing', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+      });
   </script>
 </body>
 
