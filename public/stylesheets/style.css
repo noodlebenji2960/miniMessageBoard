@@ -1,0 +1,134 @@
+body {
+  padding: 0 2rem 3.5rem 1rem;
+  font: small 'Courier New', Courier, monospace;
+  overflow-x: none;
+}
+
+#messages, .message, .messageBody {
+  border-radius: 0.5rem;
+}
+
+#messages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scaleX(0%);
+  }
+  40%{
+    transform: scaleX(105%);
+  }
+  100% {
+    transform: scaleX(100%);
+  }
+}
+
+.newMessageAnimation {
+  transform-origin: left;
+  animation: fadeIn 0.5s ease-in-out normal forwards;
+}
+
+.messageDetails {
+  padding: 0.25rem 0.5rem;
+  font-size: smaller;
+}
+
+.messageBody {
+  background: #00b7ff;
+  color: white;
+  padding: 1rem 0.5rem;
+  position: relative;
+  word-wrap: break-word;
+}
+
+.messageBody p {
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.message i {
+  color: #00B7FF;
+}
+
+.messageBody::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 1rem;
+  border: 12px solid transparent;
+  border-top-color: #00B7FF;
+  transform: translateY(-0.15rem) rotate(10deg);
+  z-index: -1;
+}
+
+.message, .messageDetails {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.message{
+  flex-direction: column;
+}
+
+.messageDetails{
+  align-items: center;
+  justify-content: space-between;
+}
+
+footer, footer form {
+  display: flex;
+  position: fixed;
+  gap: 0.5rem;
+  z-index: 1;
+}
+
+footer, footer form {
+  bottom: 0%;
+  left: 0%;
+  right: 0%;
+  background: linear-gradient(rgba(255, 255, 255, 0), white 20%);
+  padding: 2rem 1rem 1rem 1rem;
+}
+
+form input{
+  border: 1px solid #00b7ff83;
+  border-radius: 1rem;
+  padding: 0.5rem;
+}
+
+form input:not([type="submit"]) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+form input[type="submit"]{
+  background-color: #00b7ff;
+  min-width: min-content;
+  width: 15%;
+  cursor: pointer;
+  color: white;
+}
+
+form input[type="submit"]:hover{
+  background-color:#0084ff;
+}
+
+form:has(input[type="submit"]:disabled) input{
+  opacity: 50%;
+  pointer-events: none;
+}
+
+form:has(input[type="submit"]:disabled){
+  cursor: not-allowed;
+}
+
+@media screen and (max-width: 680px) {
+  .messageBody {
+    font-size: large;
+  }
+}

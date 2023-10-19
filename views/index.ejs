@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>
+    <%= title %>
+  </title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+</head>
+
+<body>
+  <div id="messages"></div>
+  <footer>
+    <form method="POST" action="/">
+      <input placeholder="Write a message..." maxlength="280" required type="text" name="messageText" />
+      <input placeholder="Your name..." maxlength="25" type="text" name="messageUser">
+      <input type="submit" id="submitButton" value="Submit">
+    </form>
+  </footer>
+  <script>
+    let initialLoad = true;
+    let cooldown = false;
+
+    function calculateElapsedTime(addedTimestamp) {
+      const addedDate = new Date(addedTimestamp);
+      const currentDate = new Date();
+      const elapsedMinutes = Math.floor((currentDate - addedDate) / 60000); // 60000 milliseconds in a minute
+
+      if (elapsedMinutes === 0) {
+        return 'just now';
+      } else if (elapsedMinutes === 1) {
+        return '1 minute ago';
+      } else if (elapsedMinutes < 60) {
+        return `${elapsedMinutes} minutes ago`;
+      } else {
+        const elapsedHours = Math.floor(elapsedMinutes / 60);
+        return `${elapsedHours} ${elapsedHours === 1 ? 'hour' : 'hours'} ago`;
+      }
+    }
+
+    // Add an event listener to the form to handle the button click
+    document.querySelector('form').addEventListener('submit', function (e) {
+      const submitButton = document.getElementById('submitButton');
+
+      if (submitButton && !cooldown) {
+        cooldown = true;
+        submitButton.disabled = true;
+
+        let cooldownTime = 30;
+        submitButton.value = `${cooldownTime}s`;
+
+        const countdownInterval = setInterval(() => {
+          cooldownTime -= 1;
+          submitButton.value = `${cooldownTime}s`;
+
+          if (cooldownTime <= 0) {
+            clearInterval(countdownInterval);
+            cooldown = false;
+            submitButton.value = "Submit";
+            submitButton.disabled = false;
+          }
+        }, 1000); // Update every 1 second
+      }
+    });
+
+    setTimeout(() => {
+      initialLoad = false;
+      function animateScroll(time) {
+        const progress = Math.min(time / 3000, 1);
+        window.scrollTo(0, window.pageYOffset + (document.body.scrollHeight - window.pageYOffset) * progress);
+        progress < 1 && requestAnimationFrame(animateScroll);
+      }
+      requestAnimationFrame(animateScroll);
+    }, 500);
+
+    const eventSource = new EventSource('/sse');
+    const messagesDiv = document.getElementById('messages');
+
+    eventSource.onmessage = function (event) {
+      const newMessage = JSON.parse(event.data);
+      const messageDiv = document.createElement('div');
+      messageDiv.classList.add('message');
+
+      const messageBodyDiv = document.createElement('div');
+      messageBodyDiv.classList.add("messageBody")
+      messageDiv.appendChild(messageBodyDiv)
+
+      const messageBodyP = document.createElement("p")
+      messageBodyP.textContent = newMessage.text
+      messageBodyDiv.appendChild(messageBodyP)
+
+      const elapsed = calculateElapsedTime(newMessage.added);
+
+      const messageDetailsDiv = document.createElement('div');
+      messageDetailsDiv.classList.add("messageDetails")
+      messageDiv.appendChild(messageDetailsDiv)
+
+      const messageAuthorDiv = document.createElement('b');
+      messageAuthorDiv.textContent = `${newMessage.user}`
+      messageDetailsDiv.appendChild(messageAuthorDiv)
+
+      const messageElapsedDiv = document.createElement('i');
+      messageElapsedDiv.textContent = `${elapsed}`
+      messageDetailsDiv.appendChild(messageElapsedDiv)
+
+      if (!initialLoad) {
+        // Add the class only if it's not the initial load
+        messageDiv.classList.add('newMessageAnimation');
+        messageBodyP.classList.add('newMessageAnimation');
+      }
+
+      messagesDiv.appendChild(messageDiv);
+      window.scrollTo(0, document.body.scrollHeight);
+    };
+  </script>
+</body>
+
+</html>
