@@ -1,7 +1,10 @@
 body {
-  padding: 0 2rem 3.5rem 1rem;
   font: small 'Courier New', Courier, monospace;
   overflow-x: none;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 #messages, .message, .messageBody {
@@ -12,29 +15,33 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 250px;
+  padding: 3rem;
+  padding-bottom: 5rem !important;
 }
 
 @keyframes fadeIn {
   0% {
     opacity: 0;
-    transform: scaleX(0%);
+    transform: scale(0%);
   }
   40%{
-    transform: scaleX(105%);
+    transform: scale(102%);
   }
   100% {
-    transform: scaleX(100%);
+    transform: scale(100%);
   }
 }
 
 .newMessageAnimation {
-  transform-origin: left;
+  transform-origin: bottom left;
   animation: fadeIn 0.5s ease-in-out normal forwards;
 }
 
 .messageDetails {
   padding: 0.25rem 0.5rem;
   font-size: smaller;
+  flex-wrap: wrap;
 }
 
 .messageBody {
@@ -77,16 +84,21 @@ body {
 .messageDetails{
   align-items: center;
   justify-content: space-between;
+  white-space: nowrap;
+}
+
+footer{
+  position: fixed;
+  flex-direction: column;
 }
 
 footer, footer form {
   display: flex;
-  position: fixed;
   gap: 0.5rem;
   z-index: 1;
 }
 
-footer, footer form {
+footer {
   bottom: 0%;
   left: 0%;
   right: 0%;
@@ -127,8 +139,23 @@ form:has(input[type="submit"]:disabled){
   cursor: not-allowed;
 }
 
-@media screen and (max-width: 680px) {
-  .messageBody {
+@media screen and (max-width: 480px) {
+  #messages {
     font-size: large;
+    padding: 0.25rem;
   }
+  .messageDetails{
+    font-size: x-small;
+  }
+}
+
+.typing-indicator {
+  display: none;
+  color: #000;
+  padding: 5px;
+  border-radius: 10px;
+  z-index: 99;
+  position: absolute;
+  top: 0;
+  right: 0;
 }

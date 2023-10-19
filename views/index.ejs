@@ -6,20 +6,23 @@
     <%= title %>
   </title>
   <link rel='stylesheet' href='/stylesheets/style.css' />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
 <body>
   <div id="messages"></div>
   <footer>
+    <div class="typing-indicator" id="typingIndicator">
+      Somone is typing...
+    </div>
     <form method="POST" action="/">
-      <input placeholder="Write a message..." maxlength="280" required type="text" name="messageText" />
-      <input placeholder="Your name..." maxlength="25" type="text" name="messageUser">
+      <input id="messageText" placeholder="Write a message..." maxlength="280" required type="text" name="messageText" />
+      <input id="messageUser" placeholder="Your name..." maxlength="18" type="text" name="messageUser">
       <input type="submit" id="submitButton" value="Submit">
     </form>
   </footer>
   <script>
     let initialLoad = true;
-    let cooldown = false;
 
     function calculateElapsedTime(addedTimestamp) {
       const addedDate = new Date(addedTimestamp);
@@ -37,31 +40,6 @@
         return `${elapsedHours} ${elapsedHours === 1 ? 'hour' : 'hours'} ago`;
       }
     }
-
-    // Add an event listener to the form to handle the button click
-    document.querySelector('form').addEventListener('submit', function (e) {
-      const submitButton = document.getElementById('submitButton');
-
-      if (submitButton && !cooldown) {
-        cooldown = true;
-        submitButton.disabled = true;
-
-        let cooldownTime = 30;
-        submitButton.value = `${cooldownTime}s`;
-
-        const countdownInterval = setInterval(() => {
-          cooldownTime -= 1;
-          submitButton.value = `${cooldownTime}s`;
-
-          if (cooldownTime <= 0) {
-            clearInterval(countdownInterval);
-            cooldown = false;
-            submitButton.value = "Submit";
-            submitButton.disabled = false;
-          }
-        }, 1000); // Update every 1 second
-      }
-    });
 
     setTimeout(() => {
       initialLoad = false;
@@ -112,6 +90,19 @@
       messagesDiv.appendChild(messageDiv);
       window.scrollTo(0, document.body.scrollHeight);
     };
+
+    const messageTextInput = document.getElementById('messageText');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    let typingTimeout;
+
+    messageTextInput.addEventListener('input', () => {
+      clearTimeout(typingTimeout);
+      typingIndicator.style.display = 'block';
+      typingTimeout = setTimeout(() => {
+        typingIndicator.style.display = 'none';
+      }, 500);
+    });
   </script>
 </body>
 
